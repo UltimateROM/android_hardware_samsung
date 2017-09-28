@@ -49,6 +49,8 @@
 #include <ril_service.h>
 #include <sap_service.h>
 
+#include "ril_ext.h"
+
 extern "C" void
 RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responselen);
 
@@ -614,6 +616,11 @@ RIL_onRequestAck(RIL_Token t) {
         return;
     }
 
+    if(pRI->pCI->requestNumber == 91) {
+        RLOGE("RIL_onRequestAck: Avoid unknown");
+        return;
+    }
+
     socket_id = pRI->socket_id;
 
 #if VDBG
@@ -680,6 +687,12 @@ RIL_onRequestComplete(RIL_Token t, RIL_Errno e, void *response, size_t responsel
 #if VDBG
         RLOGE ("Calling responseFunction() for token %d", pRI->token);
 #endif
+
+        if(pRI->pCI->requestNumber == 91) {
+            RLOGE("RIL_onRequestComplete: Avoid unknown");
+            return;
+        }
+
 
         pthread_rwlock_t *radioServiceRwlockPtr = radio::getRadioServiceRwlock((int) socket_id);
         int rwlockRet = pthread_rwlock_rdlock(radioServiceRwlockPtr);
